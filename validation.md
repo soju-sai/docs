@@ -37,33 +37,33 @@
     - [Implicit Rules](#implicit-rules)
 
 <a name="introduction"></a>
-## Introduction
+## 介紹
 
-Laravel provides several different approaches to validate your application's incoming data. It is most common to use the `validate` method available on all incoming HTTP requests. However, we will discuss other approaches to validation as well.
+Laravel 提供了幾種不同的方法來驗證應用程式的傳入資料。最常見的方法是使用可用於所有傳入 HTTP 請求的 `validate` 方法。然而，我們也將討論其他驗證方法。
 
-Laravel includes a wide variety of convenient validation rules that you may apply to data, even providing the ability to validate if values are unique in a given database table. We'll cover each of these validation rules in detail so that you are familiar with all of Laravel's validation features.
+Laravel 包含多種便捷的驗證規則，您可以應用到資料中，甚至可以驗證某個值在給定的資料庫表中是否唯一。我們將詳細介紹每個驗證規則，以便您熟悉 Laravel 的所有驗證功能。
 
 <a name="validation-quickstart"></a>
-## Validation Quickstart
+## 驗證快速入門
 
-To learn about Laravel's powerful validation features, let's look at a complete example of validating a form and displaying the error messages back to the user. By reading this high-level overview, you'll be able to gain a good general understanding of how to validate incoming request data using Laravel:
+為了學習 Laravel 強大的驗證功能，我們來看看一個完整的範例，該範例呈現了如何驗證表單並將錯誤資訊顯示給用戶。通過閱讀這個高級概述，您將能夠對如何使用 Laravel 驗證傳入的請求資料有一個良好的整體理解：
 
 <a name="quick-defining-the-routes"></a>
-### Defining the Routes
+### 定義路由
 
-First, let's assume we have the following routes defined in our `routes/web.php` file:
+首先，假設我們在 `routes/web.php` 檔案中定義了以下路由：
 
     use App\Http\Controllers\PostController;
 
     Route::get('/post/create', [PostController::class, 'create']);
     Route::post('/post', [PostController::class, 'store']);
 
-The `GET` route will display a form for the user to create a new blog post, while the `POST` route will store the new blog post in the database.
+`GET` 路由將顯示一個表單，供用戶新建新的部落格文章，而 `POST` 路由將把新的部落格文章儲存在資料庫中。
 
 <a name="quick-creating-the-controller"></a>
-### Creating the Controller
+### 新建控制器
 
-Next, let's take a look at a simple controller that handles incoming requests to these routes. We'll leave the `store` method empty for now:
+接下來，我們來看看一個處理這些路由的簡單控制器。我們暫時將 `store` 方法留空：
 
     <?php
 
@@ -76,7 +76,7 @@ Next, let's take a look at a simple controller that handles incoming requests to
     class PostController extends Controller
     {
         /**
-         * Show the form to create a new blog post.
+         * 顯示新建部落格文章的表單。
          */
         public function create(): View
         {
@@ -84,11 +84,11 @@ Next, let's take a look at a simple controller that handles incoming requests to
         }
 
         /**
-         * Store a new blog post.
+         * 儲存新的部落格文章。
          */
         public function store(Request $request): RedirectResponse
         {
-            // Validate and store the blog post...
+            // 驗證並儲存部落格文章...
 
             $post = /** ... */
 
@@ -97,16 +97,16 @@ Next, let's take a look at a simple controller that handles incoming requests to
     }
 
 <a name="quick-writing-the-validation-logic"></a>
-### Writing the Validation Logic
+### 撰寫驗證邏輯
 
-Now we are ready to fill in our `store` method with the logic to validate the new blog post. To do this, we will use the `validate` method provided by the `Illuminate\Http\Request` object. If the validation rules pass, your code will keep executing normally; however, if validation fails, an `Illuminate\Validation\ValidationException` exception will be thrown and the proper error response will automatically be sent back to the user.
+現在我們準備在 `store` 方法中填入驗證新部落格文章的邏輯。為此，我們將使用 `Illuminate\Http\Request` 對象提供的 `validate` 方法。如果驗證規則通過，您的程式碼將正常繼續執行；但是，如果驗證失敗，將拋出 `Illuminate\Validation\ValidationException` 例外並自動向用戶發送適當的錯誤 response。
 
-If validation fails during a traditional HTTP request, a redirect response to the previous URL will be generated. If the incoming request is an XHR request, a [JSON response containing the validation error messages](#validation-error-response-format) will be returned.
+如果傳統 HTTP 請求期間的驗證失敗，將生成重新導向 response 到先前的 URL。如果傳入的請求是 XHR 請求，將返回包含驗證錯誤訊息的 [JSON response](#validation-error-response-format)。
 
-To get a better understanding of the `validate` method, let's jump back into the `store` method:
+為了更好地理解 `validate` 方法，讓我們回到 `store` 方法：
 
     /**
-     * Store a new blog post.
+     * 儲存新的部落格文章。
      */
     public function store(Request $request): RedirectResponse
     {
@@ -115,21 +115,21 @@ To get a better understanding of the `validate` method, let's jump back into the
             'body' => 'required',
         ]);
 
-        // The blog post is valid...
+        // 部落格文章是有效的...
 
         return redirect('/posts');
     }
 
-As you can see, the validation rules are passed into the `validate` method. Don't worry - all available validation rules are [documented](#available-validation-rules). Again, if the validation fails, the proper response will automatically be generated. If the validation passes, our controller will continue executing normally.
+如您所見，驗證規則被傳遞給 `validate` 方法。不要擔心——所有可用的驗證規則都在[文件化](#available-validation-rules)中記錄。再次提醒，如果驗證失敗，將自動生成適當的 response 。如果驗證通過，我們的控制器將正常繼續執行。
 
-Alternatively, validation rules may be specified as arrays of rules instead of a single `|` delimited string:
+或者，驗證規則可以指定為規則陣列，而不是單個 `|` 分隔的字串：
 
     $validatedData = $request->validate([
         'title' => ['required', 'unique:posts', 'max:255'],
         'body' => ['required'],
     ]);
 
-In addition, you may use the `validateWithBag` method to validate a request and store any error messages within a [named error bag](#named-error-bags):
+此外，您可以使用 `validateWithBag` 方法來驗證請求並將任何錯誤訊息儲存在[命名的錯誤包](#named-error-bags)中：
 
     $validatedData = $request->validateWithBag('post', [
         'title' => ['required', 'unique:posts', 'max:255'],
@@ -137,21 +137,21 @@ In addition, you may use the `validateWithBag` method to validate a request and 
     ]);
 
 <a name="stopping-on-first-validation-failure"></a>
-#### Stopping on First Validation Failure
+#### 在第一次驗證失敗時停止
 
-Sometimes you may wish to stop running validation rules on an attribute after the first validation failure. To do so, assign the `bail` rule to the attribute:
+有時您可能希望在屬性上的第一個驗證失敗後停止運行驗證規則。要這樣做，請將 `bail` 規則分配給該屬性：
 
     $request->validate([
         'title' => 'bail|required|unique:posts|max:255',
         'body' => 'required',
     ]);
 
-In this example, if the `unique` rule on the `title` attribute fails, the `max` rule will not be checked. Rules will be validated in the order they are assigned.
+在此範例中，如果 `title` 屬性上的 `unique` 規則失敗，則不會檢查 `max` 規則。規則將按它們的分配順序進行驗證。
 
 <a name="a-note-on-nested-attributes"></a>
-#### A Note on Nested Attributes
+#### 關於巢狀屬性的說明
 
-If the incoming HTTP request contains "nested" field data, you may specify these fields in your validation rules using "dot" syntax:
+如果傳入的 HTTP 請求包含“巢狀”欄位資料，您可以使用“點”語法在驗證規則中指定這些欄位：
 
     $request->validate([
         'title' => 'required|unique:posts|max:255',
@@ -159,7 +159,7 @@ If the incoming HTTP request contains "nested" field data, you may specify these
         'author.description' => 'required',
     ]);
 
-On the other hand, if your field name contains a literal period, you can explicitly prevent this from being interpreted as "dot" syntax by escaping the period with a backslash:
+另一方面，如果您的欄位名稱包含 literal period ，您可以通過使用反斜線句點來防止其被解釋為“點”語法：
 
     $request->validate([
         'title' => 'required|unique:posts|max:255',
@@ -167,13 +167,13 @@ On the other hand, if your field name contains a literal period, you can explici
     ]);
 
 <a name="quick-displaying-the-validation-errors"></a>
-### Displaying the Validation Errors
+### 顯示驗證錯誤
 
-So, what if the incoming request fields do not pass the given validation rules? As mentioned previously, Laravel will automatically redirect the user back to their previous location. In addition, all of the validation errors and [request input](/docs/{{version}}/requests#retrieving-old-input) will automatically be [flashed to the session](/docs/{{version}}/session#flash-data).
+那麼，如果傳入的請求欄位不符合給定的驗證規則該怎麼辦？如前所述，Laravel 會自動將用戶重新導向到其先前的位置。此外，所有驗證錯誤和[request input](/docs/{{version}}/requests#retrieving-old-input)將自動被[flashed to the session](/docs/{{version}}/session#flash-data)中。
 
-An `$errors` variable is shared with all of your application's views by the `Illuminate\View\Middleware\ShareErrorsFromSession` middleware, which is provided by the `web` middleware group. When this middleware is applied an `$errors` variable will always be available in your views, allowing you to conveniently assume the `$errors` variable is always defined and can be safely used. The `$errors` variable will be an instance of `Illuminate\Support\MessageBag`. For more information on working with this object, [check out its documentation](#working-with-error-messages).
+`Illuminate\View\Middleware\ShareErrorsFromSession` 中介層（由 `web` 中介層組提供）會將 `$errors` 變數與您應用程式的所有視圖共享。當應用此中介層時，`$errors` 變數將總是在您的視圖中可用，使您可以方便地假設 `$errors` 變數總是已定義並且可以安全使用。`$errors` 變數將是一個 `Illuminate\Support\MessageBag` 實例。有關使用此對象的更多資訊，請[參閱其文件](#working-with-error-messages)。
 
-So, in our example, the user will be redirected to our controller's `create` method when validation fails, allowing us to display the error messages in the view:
+因此，在我們的範例中，當驗證失敗時，用戶將被重新導向到我們控制器的 `create` 方法，這使我們能夠在視圖中顯示錯誤訊息：
 
 ```blade
 <!-- /resources/views/post/create.blade.php -->
@@ -194,26 +194,26 @@ So, in our example, the user will be redirected to our controller's `create` met
 ```
 
 <a name="quick-customizing-the-error-messages"></a>
-#### Customizing the Error Messages
+#### 客製化錯誤訊息
 
-Laravel's built-in validation rules each have an error message that is located in your application's `lang/en/validation.php` file. If your application does not have a `lang` directory, you may instruct Laravel to create it using the `lang:publish` Artisan command.
+Laravel 的內建驗證規則每個都有一個錯誤訊息，位於應用程式的 `lang/en/validation.php` 文件中。如果您的應用程式沒有 `lang` 目錄，您可以指示 Laravel 使用 `lang:publish` Artisan 命令來新建它。
 
-Within the `lang/en/validation.php` file, you will find a translation entry for each validation rule. You are free to change or modify these messages based on the needs of your application.
+在 `lang/en/validation.php` 文件中，您會找到每個驗證規則的翻譯 entry。您可以根據應用程式的需要自由更改或修改這些訊息。
 
-In addition, you may copy this file to another language directory to translate the messages for your application's language. To learn more about Laravel localization, check out the complete [localization documentation](/docs/{{version}}/localization).
+此外，您可以將此文件複製到另一個語言目錄中，以翻譯應用程式語言的訊息。要了解有關 Laravel 本地化的更多資訊，請參閱完整的[本地化文件](/docs/{{version}}/localization)。
 
 > [!WARNING]  
-> By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files, you may publish them via the `lang:publish` Artisan command.
+> 預設情況下，Laravel 應用程式框架不包含 `lang` 目錄。如果您想客製化 Laravel 的語言文件，可以通過 `lang:publish` Artisan 指令.
 
 <a name="quick-xhr-requests-and-validation"></a>
-#### XHR Requests and Validation
+#### XHR 請求和驗證
 
-In this example, we used a traditional form to send data to the application. However, many applications receive XHR requests from a JavaScript powered frontend. When using the `validate` method during an XHR request, Laravel will not generate a redirect response. Instead, Laravel generates a [JSON response containing all of the validation errors](#validation-error-response-format). This JSON response will be sent with a 422 HTTP status code.
+在這個例子中，我們使用傳統表單將資料傳送至應用程式。然而，許多應用程式從 JavaScript 驅動的前端接收 XHR 請求。在 XHR 請求期間使用 `validate` 方法時，Laravel 不會產生重新導向的回應。相反地，Laravel 會生成一個 [包含所有驗證錯誤的 JSON 回應](#validation-error-response-format)。這個 JSON 回應會以 422 HTTP 狀態碼發送。
 
 <a name="the-at-error-directive"></a>
 #### The `@error` Directive
 
-You may use the `@error` [Blade](/docs/{{version}}/blade) directive to quickly determine if validation error messages exist for a given attribute. Within an `@error` directive, you may echo the `$message` variable to display the error message:
+您可以使用 `@error` [Blade](/docs/{{version}}/blade) 指令來快速判斷某個屬性是否存在驗證錯誤訊息。在 `@error` 指令內，您可以 echo `$message` 變數來顯示錯誤訊息：
 
 ```blade
 <!-- /resources/views/post/create.blade.php -->
@@ -230,7 +230,7 @@ You may use the `@error` [Blade](/docs/{{version}}/blade) directive to quickly d
 @enderror
 ```
 
-If you are using [named error bags](#named-error-bags), you may pass the name of the error bag as the second argument to the `@error` directive:
+如果您使用 [命名錯誤包](#named-error-bags)，您可以將錯誤包的名稱作為第二個參數傳遞給 `@error` 指令：
 
 ```blade
 <input ... class="@error('title', 'post') is-invalid @enderror">
@@ -239,13 +239,13 @@ If you are using [named error bags](#named-error-bags), you may pass the name of
 <a name="repopulating-forms"></a>
 ### Repopulating Forms
 
-When Laravel generates a redirect response due to a validation error, the framework will automatically [flash all of the request's input to the session](/docs/{{version}}/session#flash-data). This is done so that you may conveniently access the input during the next request and repopulate the form that the user attempted to submit.
+當 Laravel 由於驗證錯誤而生成重新導向回應時，框架會自動 [將所有請求的 input flash 到 session中](/docs/{{version}}/session#flash-data)。這是為了方便您在下一次請求中訪問這些 input 並重新填入用戶試圖提交的表單。
 
-To retrieve flashed input from the previous request, invoke the `old` method on an instance of `Illuminate\Http\Request`. The `old` method will pull the previously flashed input data from the [session](/docs/{{version}}/session):
+要從上一次請求中取得 flashed input，請呼叫 `Illuminate\Http\Request` 實例上的 `old` 方法。`old` 方法會從 [session](/docs/{{version}}/session) 中提取先前閃存的輸入資料：
 
     $title = $request->old('title');
 
-Laravel also provides a global `old` helper. If you are displaying old input within a [Blade template](/docs/{{version}}/blade), it is more convenient to use the `old` helper to repopulate the form. If no old input exists for the given field, `null` will be returned:
+Laravel 也提供了一個全局的 `old` 輔助函數。如果您在 [Blade 模板](/docs/{{version}}/blade) 中顯示舊的輸入資料，使用 `old` 輔助函數重新填入表單會更方便。如果給定字段不存在舊的輸入，將返回 `null`：
 
 ```blade
 <input type="text" name="title" value="{{ old('title') }}">
@@ -254,7 +254,7 @@ Laravel also provides a global `old` helper. If you are displaying old input wit
 <a name="a-note-on-optional-fields"></a>
 ### A Note on Optional Fields
 
-By default, Laravel includes the `TrimStrings` and `ConvertEmptyStringsToNull` middleware in your application's global middleware stack. Because of this, you will often need to mark your "optional" request fields as `nullable` if you do not want the validator to consider `null` values as invalid. For example:
+預設情況下，Laravel 在您的應用程式的 global 中介層 stack 中包括了 `TrimStrings` 和 `ConvertEmptyStringsToNull` 中介層。因此，如果您不希望驗證器將 `null` 值視為無效，您通常需要將 "optional" 請求 fields 標記為 `nullable`。例如：
 
     $request->validate([
         'title' => 'required|unique:posts|max:255',
@@ -262,14 +262,14 @@ By default, Laravel includes the `TrimStrings` and `ConvertEmptyStringsToNull` m
         'publish_at' => 'nullable|date',
     ]);
 
-In this example, we are specifying that the `publish_at` field may be either `null` or a valid date representation. If the `nullable` modifier is not added to the rule definition, the validator would consider `null` an invalid date.
+在這個例子中，我們指定 `publish_at` 字段可以是 `null` 或有效的日期表示。如果沒有將 `nullable` 修飾符添加到規則定義中，驗證器會將 `null` 視為無效的日期。
 
 <a name="validation-error-response-format"></a>
-### Validation Error Response Format
+### 驗證錯誤的 Response 格式
 
-When your application throws a `Illuminate\Validation\ValidationException` exception and the incoming HTTP request is expecting a JSON response, Laravel will automatically format the error messages for you and return a `422 Unprocessable Entity` HTTP response.
+當您的應用程式拋出 `Illuminate\Validation\ValidationException` 異常並且傳入的 HTTP 請求期望 JSON 回應時，Laravel 會自動為您格式化錯誤訊息並返回 `422 Unprocessable Entity` HTTP 回應。
 
-Below, you can review an example of the JSON response format for validation errors. Note that nested error keys are flattened into "dot" notation format:
+下面，您可以查看驗證錯誤的 JSON 回應格式範例。注意巢狀的錯誤鍵會被攤平為 "點" 符號格式：
 
 ```json
 {
@@ -293,20 +293,20 @@ Below, you can review an example of the JSON response format for validation erro
 ```
 
 <a name="form-request-validation"></a>
-## Form Request Validation
+## Form Request 驗證
 
 <a name="creating-form-requests"></a>
-### Creating Form Requests
+### 新建 Form Requests
 
-For more complex validation scenarios, you may wish to create a "form request". Form requests are custom request classes that encapsulate their own validation and authorization logic. To create a form request class, you may use the `make:request` Artisan CLI command:
+對於更複雜的驗證場景，您可能希望新建一個 "表單請求"。表單請求是封裝自己的驗證和授權邏輯的客製化請求類別。要新建表單請求類別，您可以使用 `make:request` Artisan CLI 命令：
 
 ```shell
 php artisan make:request StorePostRequest
 ```
 
-The generated form request class will be placed in the `app/Http/Requests` directory. If this directory does not exist, it will be created when you run the `make:request` command. Each form request generated by Laravel has two methods: `authorize` and `rules`.
+生成的表單請求類將被放置在 `app/Http/Requests` 目錄中。如果該目錄不存在，當您運行 `make:request` 命令時會自動新建。每個由 Laravel 生成的表單請求都有兩個方法：`authorize` 和 `rules`。
 
-As you might have guessed, the `authorize` method is responsible for determining if the currently authenticated user can perform the action represented by the request, while the `rules` method returns the validation rules that should apply to the request's data:
+如您所料，`authorize` 方法負責確定當前身份驗證用戶是否可以執行該請求所代表的操作，而 `rules` 方法返回應用於請求資料的驗證規則：
 
     /**
      * Get the validation rules that apply to the request.
@@ -322,40 +322,40 @@ As you might have guessed, the `authorize` method is responsible for determining
     }
 
 > [!NOTE]  
-> You may type-hint any dependencies you require within the `rules` method's signature. They will automatically be resolved via the Laravel [service container](/docs/{{version}}/container).
+> 您可以在 `rules` 方法的簽名中進行類型提示所需的任何依賴。它們將自動通過 Laravel [服務容器](/docs/{{version}}/container) 解決。
 
-So, how are the validation rules evaluated? All you need to do is type-hint the request on your controller method. The incoming form request is validated before the controller method is called, meaning you do not need to clutter your controller with any validation logic:
+那麼，驗證規則是如何被評估的呢？您只需在控制器方法中進行類型提示即可。在呼叫控制器方法之前，傳入的表單請求會被驗證，這意味著您不需要在控制器中混雜任何驗證邏輯：
 
     /**
      * Store a new blog post.
      */
     public function store(StorePostRequest $request): RedirectResponse
     {
-        // The incoming request is valid...
+        // 傳入的請求是有效的...
 
-        // Retrieve the validated input data...
+        // 取得已驗證的輸入資料...
         $validated = $request->validated();
 
-        // Retrieve a portion of the validated input data...
+        // 取得已驗證輸入資料的一部分...
         $validated = $request->safe()->only(['name', 'email']);
         $validated = $request->safe()->except(['name', 'email']);
 
-        // Store the blog post...
+        // 儲存部落格文章...
 
         return redirect('/posts');
     }
 
-If validation fails, a redirect response will be generated to send the user back to their previous location. The errors will also be flashed to the session so they are available for display. If the request was an XHR request, an HTTP response with a 422 status code will be returned to the user including a [JSON representation of the validation errors](#validation-error-response-format).
+如果驗證失敗，將生成一個重新導向回應以將用戶發送回他們之前的位置。錯誤也將被 flashed 到 session 中以便顯示。如果請求是 XHR 請求，將返回一個包含 [驗證錯誤的 JSON 表示](#validation-error-response-format) 的 422 狀態碼的 HTTP 回應。
 
 > [!NOTE]  
-> Need to add real-time form request validation to your Inertia powered Laravel frontend? Check out [Laravel Precognition](/docs/{{version}}/precognition).
+> 需要向您的 Inertia 驅動的 Laravel 前端添加即時表單請求驗證嗎？查看 [Laravel Precognition](/docs/{{version}}/precognition)。
 
 <a name="performing-additional-validation-on-form-requests"></a>
-#### Performing Additional Validation
+#### 執行額外驗證
 
-Sometimes you need to perform additional validation after your initial validation is complete. You can accomplish this using the form request's `after` method.
+有時您需要在完成初始驗證後執行額外的驗證。您可以使用表單請求的 `after` 方法來完成這一點。
 
-The `after` method should return an array of callables or closures which will be invoked after validation is complete. The given callables will receive an `Illuminate\Validation\Validator` instance, allowing you to raise additional error messages if necessary:
+`after` 方法應該要返回一個 callables 或閉包的陣列，這些 callables 或閉包會在驗證完成後被呼叫。給定的callables將接收一個 `Illuminate\Validation\Validator` 實例，允許您在必要時增加額外的錯誤訊息：
 
     use Illuminate\Validation\Validator;
 
@@ -376,7 +376,7 @@ The `after` method should return an array of callables or closures which will be
         ];
     }
 
-As noted, the array returned by the `after` method may also contain invokable classes. The `__invoke` method of these classes will receive an `Illuminate\Validation\Validator` instance:
+如前所述，`after` 方法返回的陣列也可以包含 callables 的類別。這些類別的 `__invoke` 方法將 接收一個 `Illuminate\Validation\Validator` 實例:
 
 ```php
 use App\Validation\ValidateShippingTime;
@@ -384,7 +384,7 @@ use App\Validation\ValidateUserStatus;
 use Illuminate\Validation\Validator;
 
 /**
- * Get the "after" validation callables for the request.
+ * 取得"after"驗證的 callables 給request 
  */
 public function after(): array
 {
