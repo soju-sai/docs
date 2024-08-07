@@ -239,13 +239,13 @@ Laravel 的內建驗證規則每個都有一個錯誤訊息，位於應用程式
 <a name="repopulating-forms"></a>
 ### Repopulating Forms
 
-當 Laravel 由於驗證錯誤而生成重新導向回應時，框架會自動 [將所有請求的 input flash 到 session中](/docs/{{version}}/session#flash-data)。這是為了方便您在下一次請求中訪問這些 input 並重新填入用戶試圖提交的表單。
+當 Laravel 由於驗證錯誤而生成重新導向回應時，框架會自動 [將所有請求的 input flash 到 session中](/docs/{{version}}/session#flash-data)。這是為了方便您在下一次請求中取得這些 input 並重新填入用戶試圖提交的表單。
 
-要從上一次請求中取得 flashed input，請呼叫 `Illuminate\Http\Request` 實例上的 `old` 方法。`old` 方法會從 [session](/docs/{{version}}/session) 中提取先前閃存的輸入資料：
+要從上一次請求中取得 flashed input，請呼叫 `Illuminate\Http\Request` 實例上的 `old` 方法。`old` 方法會從 [session](/docs/{{version}}/session) 中提取先前flash的輸入資料：
 
     $title = $request->old('title');
 
-Laravel 也提供了一個全局的 `old` 輔助函數。如果您在 [Blade 模板](/docs/{{version}}/blade) 中顯示舊的輸入資料，使用 `old` 輔助函數重新填入表單會更方便。如果給定字段不存在舊的輸入，將返回 `null`：
+Laravel 也提供了一個全局的 `old` 輔助函數。如果您在 [Blade 模板](/docs/{{version}}/blade) 中顯示舊的輸入資料，使用 `old` 輔助函數重新填入表單會更方便。如果給定欄位不存在舊的輸入，將返回 `null`：
 
 ```blade
 <input type="text" name="title" value="{{ old('title') }}">
@@ -262,7 +262,7 @@ Laravel 也提供了一個全局的 `old` 輔助函數。如果您在 [Blade 模
         'publish_at' => 'nullable|date',
     ]);
 
-在這個例子中，我們指定 `publish_at` 字段可以是 `null` 或有效的日期表示。如果沒有將 `nullable` 修飾符添加到規則定義中，驗證器會將 `null` 視為無效的日期。
+在這個例子中，我們指定 `publish_at` 欄位可以是 `null` 或有效的日期表示。如果沒有將 `nullable` 修飾符添加到規則定義中，驗證器會將 `null` 視為無效的日期。
 
 <a name="validation-error-response-format"></a>
 ### 驗證錯誤的 Response 格式
@@ -322,9 +322,9 @@ php artisan make:request StorePostRequest
     }
 
 > [!NOTE]  
-> 您可以在 `rules` 方法的簽名中進行類型提示所需的任何依賴。它們將自動通過 Laravel [服務容器](/docs/{{version}}/container) 解決。
+> 您可以在 `rules` 方法的簽名中進行型別提示所需的任何依賴。它們將自動通過 Laravel [服務容器](/docs/{{version}}/container) 解決。
 
-那麼，驗證規則是如何被評估的呢？您只需在控制器方法中進行類型提示即可。在呼叫控制器方法之前，傳入的表單請求會被驗證，這意味著您不需要在控制器中混雜任何驗證邏輯：
+那麼，驗證規則是如何被評估的呢？您只需在控制器方法中進行型別提示即可。在呼叫控制器方法之前，傳入的表單請求會被驗證，這意味著您不需要在控制器中混雜任何驗證邏輯：
 
     /**
      * Store a new blog post.
@@ -399,47 +399,47 @@ public function after(): array
 ```
 
 <a name="request-stopping-on-first-validation-rule-failure"></a>
-#### Stopping on the First Validation Failure
+#### 停止在第一個驗證規則失敗時
 
-By adding a `stopOnFirstFailure` property to your request class, you may inform the validator that it should stop validating all attributes once a single validation failure has occurred:
+通過在請求類別中添加一個 `stopOnFirstFailure` 屬性，您可以通知驗證器，一旦出現單一驗證失敗，它應該停止驗證所有屬性：
 
     /**
-     * Indicates if the validator should stop on the first rule failure.
+     * 指出驗證器是否應該在第一個規則失敗時停止。
      *
      * @var bool
      */
     protected $stopOnFirstFailure = true;
 
 <a name="customizing-the-redirect-location"></a>
-#### Customizing the Redirect Location
+#### 客製化重新導向位置
 
-As previously discussed, a redirect response will be generated to send the user back to their previous location when form request validation fails. However, you are free to customize this behavior. To do so, define a `$redirect` property on your form request:
+如前所述，當表單請求驗證失敗時，將生成一個重新導向回應以將用戶發送回他們之前的位置。然而，您可以自由客製化此行為。為此，請在您的表單請求中定義一個 `$redirect` 屬性：
 
     /**
-     * The URI that users should be redirected to if validation fails.
+     * 如果驗證失敗，用戶應被重新導向到的 URI。
      *
      * @var string
      */
     protected $redirect = '/dashboard';
 
-Or, if you would like to redirect users to a named route, you may define a `$redirectRoute` property instead:
+或者，如果您希望將用戶重新導向到命名路由，您可以定義一個 `$redirectRoute` 屬性：
 
     /**
-     * The route that users should be redirected to if validation fails.
+     * 如果驗證失敗，用戶應被重新導向到的路由。
      *
      * @var string
      */
     protected $redirectRoute = 'dashboard';
 
 <a name="authorizing-form-requests"></a>
-### Authorizing Form Requests
+### 授權表單請求
 
-The form request class also contains an `authorize` method. Within this method, you may determine if the authenticated user actually has the authority to update a given resource. For example, you may determine if a user actually owns a blog comment they are attempting to update. Most likely, you will interact with your [authorization gates and policies](/docs/{{version}}/authorization) within this method:
+表單請求類還包含一個 `authorize` 方法。在此方法中，您可以確定已認證的用戶是否確實有權更新給定資源。例如，您可以確定用戶是否確實擁有他們試圖更新的部落格評論。很可能，您將在此方法中與您的[授權門和原則](/docs/{{version}}/authorization)進行互動：
 
     use App\Models\Comment;
 
     /**
-     * Determine if the user is authorized to make this request.
+     * 確定用戶是否有權進行此請求。
      */
     public function authorize(): bool
     {
@@ -448,20 +448,20 @@ The form request class also contains an `authorize` method. Within this method, 
         return $comment && $this->user()->can('update', $comment);
     }
 
-Since all form requests extend the base Laravel request class, we may use the `user` method to access the currently authenticated user. Also, note the call to the `route` method in the example above. This method grants you access to the URI parameters defined on the route being called, such as the `{comment}` parameter in the example below:
+由於所有表單請求都繼承了 Laravel 基本請求類別，我們可以使用 `user` 方法取得當前已認證的用戶。另外，請注意上述範例中的 `route` 方法呼叫。此方法允許您取得在被呼叫的路由上定義的 URI 參數，例如以下範例中的 `{comment}` 參數：
 
     Route::post('/comment/{comment}');
 
-Therefore, if your application is taking advantage of [route model binding](/docs/{{version}}/routing#route-model-binding), your code may be made even more succinct by accessing the resolved model as a property of the request:
+因此，如果您的應用程式利用了[路由模型綁定](/docs/{{version}}/routing#route-model-binding)，您可以通過作為請求的屬性取得解析後的模型，使您的程式碼更為簡潔：
 
     return $this->user()->can('update', $this->comment);
 
-If the `authorize` method returns `false`, an HTTP response with a 403 status code will automatically be returned and your controller method will not execute.
+如果 `authorize` 方法返回 `false`，將自動返回一個 403 狀態碼的 HTTP 回應，並且您的控制器方法將不會執行。
 
-If you plan to handle authorization logic for the request in another part of your application, you may remove the `authorize` method completely, or simply return `true`:
+如果您打算在應用程式的其他部分處理請求的授權邏輯，您可以完全刪除 `authorize` 方法，或者簡單地返回 `true`：
 
     /**
-     * Determine if the user is authorized to make this request.
+     * 確定用戶是否有權進行此請求。
      */
     public function authorize(): bool
     {
@@ -469,52 +469,52 @@ If you plan to handle authorization logic for the request in another part of you
     }
 
 > [!NOTE]  
-> You may type-hint any dependencies you need within the `authorize` method's signature. They will automatically be resolved via the Laravel [service container](/docs/{{version}}/container).
+> 您可以在 `authorize` 方法的簽名中型別提示您需要的任何依賴項。它們將自動通過 Laravel [服務容器](/docs/{{version}}/container)解析。
 
 <a name="customizing-the-error-messages"></a>
-### Customizing the Error Messages
+### 客製化錯誤訊息
 
-You may customize the error messages used by the form request by overriding the `messages` method. This method should return an array of attribute / rule pairs and their corresponding error messages:
+您可以通過覆蓋 `messages` 方法來客製化表單請求使用的錯誤訊息。此方法應返回屬性 / 規則 pairs 及其相應錯誤訊息的陣列：
 
     /**
-     * Get the error messages for the defined validation rules.
+     * 獲取已定義的驗證規則的錯誤訊息。
      *
      * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'title.required' => 'A title is required',
-            'body.required' => 'A message is required',
+            'title.required' => '標題是必需的',
+            'body.required' => '訊息是必需的',
         ];
     }
 
 <a name="customizing-the-validation-attributes"></a>
-#### Customizing the Validation Attributes
+#### 客製化驗證屬性
 
-Many of Laravel's built-in validation rule error messages contain an `:attribute` placeholder. If you would like the `:attribute` placeholder of your validation message to be replaced with a custom attribute name, you may specify the custom names by overriding the `attributes` method. This method should return an array of attribute / name pairs:
+許多 Laravel 的內建驗證規則錯誤訊息包含一個 `:attribute` placeholder。如果您希望您的驗證訊息中的 `:attribute` placeholder 替換為客製化屬性名稱，您可以通過覆蓋 `attributes` 方法來指定客製化名稱。此方法應返回屬性 / 名稱 pairs 的陣列：
 
     /**
-     * Get custom attributes for validator errors.
+     * 獲取驗證器錯誤的客製化屬性。
      *
      * @return array<string, string>
      */
     public function attributes(): array
     {
         return [
-            'email' => 'email address',
+            'email' => '電子郵件地址',
         ];
     }
 
 <a name="preparing-input-for-validation"></a>
-### Preparing Input for Validation
+### 為驗證準備輸入
 
-If you need to prepare or sanitize any data from the request before you apply your validation rules, you may use the `prepareForValidation` method:
+如果您需要在應用驗證規則之前準備或清理請求中的任何資料，可以使用 `prepareForValidation` 方法：
 
     use Illuminate\Support\Str;
 
     /**
-     * Prepare the data for validation.
+     * 為驗證準備資料。
      */
     protected function prepareForValidation(): void
     {
@@ -523,10 +523,10 @@ If you need to prepare or sanitize any data from the request before you apply yo
         ]);
     }
 
-Likewise, if you need to normalize any request data after validation is complete, you may use the `passedValidation` method:
+同樣，如果您需要在驗證完成後規範化任何請求資料，您可以使用 `passedValidation` 方法：
 
     /**
-     * Handle a passed validation attempt.
+     * 處理驗證通過的嘗試。
      */
     protected function passedValidation(): void
     {
@@ -534,9 +534,9 @@ Likewise, if you need to normalize any request data after validation is complete
     }
 
 <a name="manually-creating-validators"></a>
-## Manually Creating Validators
+## 手動建立驗證器
 
-If you do not want to use the `validate` method on the request, you may create a validator instance manually using the `Validator` [facade](/docs/{{version}}/facades). The `make` method on the facade generates a new validator instance:
+如果您不想在請求上使用 `validate` 方法，可以使用 `Validator` [facade](/docs/{{version}}/facades) 手動建立驗證器實例。facade 上的 `make` 方法會生成一個新的驗證器實例：
 
     <?php
 
@@ -549,7 +549,7 @@ If you do not want to use the `validate` method on the request, you may create a
     class PostController extends Controller
     {
         /**
-         * Store a new blog post.
+         * 儲存新的部落格文章。
          */
         public function store(Request $request): RedirectResponse
         {
@@ -564,42 +564,42 @@ If you do not want to use the `validate` method on the request, you may create a
                             ->withInput();
             }
 
-            // Retrieve the validated input...
+            // 獲取已驗證的輸入...
             $validated = $validator->validated();
 
-            // Retrieve a portion of the validated input...
+            // 獲取部分已驗證的輸入...
             $validated = $validator->safe()->only(['name', 'email']);
             $validated = $validator->safe()->except(['name', 'email']);
 
-            // Store the blog post...
+            // 儲存部落格文章...
 
             return redirect('/posts');
         }
     }
 
-The first argument passed to the `make` method is the data under validation. The second argument is an array of the validation rules that should be applied to the data.
+傳遞給 `make` 方法的第一個參數是正在驗證的資料。第二個參數是應用於資料的驗證規則陣列。
 
-After determining whether the request validation failed, you may use the `withErrors` method to flash the error messages to the session. When using this method, the `$errors` variable will automatically be shared with your views after redirection, allowing you to easily display them back to the user. The `withErrors` method accepts a validator, a `MessageBag`, or a PHP `array`.
+在確定請求驗證失敗後，可以使用 `withErrors` 方法將錯誤訊息 flash 到 session 中。使用此方法時，重新導向後將自動與視圖共享 `$errors` 變數，使您可以輕鬆地將其顯示給用戶。`withErrors` 方法接受驗證器、`MessageBag` 或 PHP `array`。
 
-#### Stopping on First Validation Failure
+#### 在首次驗證失敗即停止
 
-The `stopOnFirstFailure` method will inform the validator that it should stop validating all attributes once a single validation failure has occurred:
+`stopOnFirstFailure` 方法將通知驗證器一旦發生單次驗證失敗，就應停止驗證所有屬性：
 
     if ($validator->stopOnFirstFailure()->fails()) {
         // ...
     }
 
 <a name="automatic-redirection"></a>
-### Automatic Redirection
+### 自動重新導向
 
-If you would like to create a validator instance manually but still take advantage of the automatic redirection offered by the HTTP request's `validate` method, you may call the `validate` method on an existing validator instance. If validation fails, the user will automatically be redirected or, in the case of an XHR request, a [JSON response will be returned](#validation-error-response-format):
+如果您想手動建立驗證器實例，但仍想利用 HTTP 請求的 `validate` 方法提供的自動重新導向，可以在現有的驗證器實例上呼叫 `validate` 方法。如果驗證失敗，用戶將自動被重新導向，或者在 XHR 請求的情況下， [將返回JSON 回應](#validation-error-response-format)：
 
     Validator::make($request->all(), [
         'title' => 'required|unique:posts|max:255',
         'body' => 'required',
     ])->validate();
 
-You may use the `validateWithBag` method to store the error messages in a [named error bag](#named-error-bags) if validation fails:
+如果驗證失敗，您可以使用 `validateWithBag` 方法將錯誤訊息存儲在 [命名錯誤包](#named-error-bags) 中：
 
     Validator::make($request->all(), [
         'title' => 'required|unique:posts|max:255',
@@ -607,28 +607,28 @@ You may use the `validateWithBag` method to store the error messages in a [named
     ])->validateWithBag('post');
 
 <a name="named-error-bags"></a>
-### Named Error Bags
+### 命名錯誤包
 
-If you have multiple forms on a single page, you may wish to name the `MessageBag` containing the validation errors, allowing you to retrieve the error messages for a specific form. To achieve this, pass a name as the second argument to `withErrors`:
+如果您在單個頁面上有多個表單，可能需要命名包含驗證錯誤的 `MessageBag`，這樣可以取回特定表單的錯誤訊息。為實現此目的，請將名稱作為第二個參數傳遞給 `withErrors`：
 
     return redirect('register')->withErrors($validator, 'login');
 
-You may then access the named `MessageBag` instance from the `$errors` variable:
+然後可以從 `$errors` 變數中訪問命名的 `MessageBag` 實例：
 
 ```blade
 {{ $errors->login->first('email') }}
 ```
 
 <a name="manual-customizing-the-error-messages"></a>
-### Customizing the Error Messages
+### 自訂錯誤訊息
 
-If needed, you may provide custom error messages that a validator instance should use instead of the default error messages provided by Laravel. There are several ways to specify custom messages. First, you may pass the custom messages as the third argument to the `Validator::make` method:
+如果需要，可以提供自訂錯誤訊息供驗證器實例使用，而不是 Laravel 提供的預設錯誤訊息。有幾種方法可以指定自訂訊息。首先，可以將自訂訊息作為第三個參數傳遞給 `Validator::make` 方法：
 
     $validator = Validator::make($input, $rules, $messages = [
         'required' => 'The :attribute field is required.',
     ]);
 
-In this example, the `:attribute` placeholder will be replaced by the actual name of the field under validation. You may also utilize other placeholders in validation messages. For example:
+在此範例中，`:attribute` placeholder 將被替換為正在驗證的欄位的實際名稱。還可以在驗證訊息中使用其他placeholder。例如：
 
     $messages = [
         'same' => 'The :attribute and :other must match.',
@@ -638,27 +638,27 @@ In this example, the `:attribute` placeholder will be replaced by the actual nam
     ];
 
 <a name="specifying-a-custom-message-for-a-given-attribute"></a>
-#### Specifying a Custom Message for a Given Attribute
+#### 指定特定屬性的自訂訊息
 
-Sometimes you may wish to specify a custom error message only for a specific attribute. You may do so using "dot" notation. Specify the attribute's name first, followed by the rule:
+有時可能只想為特定屬性指定自訂錯誤訊息。可以使用“點”符號來實現。首先指定屬性的名稱，然後是規則：
 
     $messages = [
         'email.required' => 'We need to know your email address!',
     ];
 
 <a name="specifying-custom-attribute-values"></a>
-#### Specifying Custom Attribute Values
+#### 指定自訂屬性值
 
-Many of Laravel's built-in error messages include an `:attribute` placeholder that is replaced with the name of the field or attribute under validation. To customize the values used to replace these placeholders for specific fields, you may pass an array of custom attributes as the fourth argument to the `Validator::make` method:
+許多 Laravel 的內建錯誤訊息包括一個 `:attribute` placeholder，它會被正在驗證的欄位或屬性的名稱替換。要自訂這些placeholder在特定欄位中的替換值，可以將自訂屬性陣列作為第四個參數傳遞給 `Validator::make` 方法：
 
     $validator = Validator::make($input, $rules, $messages, [
         'email' => 'email address',
     ]);
 
 <a name="performing-additional-validation"></a>
-### Performing Additional Validation
+### 執行額外驗證
 
-Sometimes you need to perform additional validation after your initial validation is complete. You can accomplish this using the validator's `after` method. The `after` method accepts a closure or an array of callables which will be invoked after validation is complete. The given callables will receive an `Illuminate\Validation\Validator` instance, allowing you to raise additional error messages if necessary:
+有時需要在初始驗證完成後執行額外的驗證。可以使用驗證器的 `after` 方法來完成。`after` 方法接受一個閉包或 callables 陣列，這些將在驗證完成後被呼叫。給定的可呼叫陣列將接收一個 `Illuminate\Validation\Validator` 實例，允許在必要時添加額外的錯誤訊息：
 
     use Illuminate\Support\Facades\Validator;
 
@@ -676,7 +676,7 @@ Sometimes you need to perform additional validation after your initial validatio
         // ...
     }
 
-As noted, the `after` method also accepts an array of callables, which is particularly convenient if your "after validation" logic is encapsulated in invokable classes, which will receive an `Illuminate\Validation\Validator` instance via their `__invoke` method:
+如前所述，`after` 方法還接受可呼叫陣列，這在“後驗證”邏輯封裝在可呼叫類別中時特別方便，這些類別將通過其 `__invoke` 方法接收一個 `Illuminate\Validation.Validator` 實例：
 
 ```php
 use App\Validation\ValidateShippingTime;
@@ -692,15 +692,15 @@ $validator->after([
 ```
 
 <a name="working-with-validated-input"></a>
-## Working With Validated Input
+## 處理已驗證的輸入
 
-After validating incoming request data using a form request or a manually created validator instance, you may wish to retrieve the incoming request data that actually underwent validation. This can be accomplished in several ways. First, you may call the `validated` method on a form request or validator instance. This method returns an array of the data that was validated:
+在使用表單請求或手動建立的驗證器實例驗證傳入請求資料後，你可能想要取回實際經過驗證的傳入請求資料。有幾種方法可以完成這一點。首先，可以在表單請求或驗證器實例上呼叫 `validated` 方法。此方法返回經過驗證的資料陣列：
 
     $validated = $request->validated();
 
     $validated = $validator->validated();
 
-Alternatively, you may call the `safe` method on a form request or validator instance. This method returns an instance of `Illuminate\Support\ValidatedInput`. This object exposes `only`, `except`, and `all` methods to retrieve a subset of the validated data or the entire array of validated data:
+或者，可以在表單請求或驗證器實例上呼叫 `safe` 方法。此方法返回一個 `Illuminate\Support\ValidatedInput` 實例。該對象公開 `only`、`except` 和 `all` 方法，以取回已驗證資料的子集或整個已驗證資料陣列：
 
     $validated = $request->safe()->only(['name', 'email']);
 
@@ -708,136 +708,136 @@ Alternatively, you may call the `safe` method on a form request or validator ins
 
     $validated = $request->safe()->all();
 
-In addition, the `Illuminate\Support\ValidatedInput` instance may be iterated over and accessed like an array:
+此外，可以像陣列一樣遍歷和訪問 `Illuminate\Support\ValidatedInput` 實例：
 
-    // Validated data may be iterated...
+    // 可以遍歷已驗證的資料...
     foreach ($request->safe() as $key => $value) {
         // ...
     }
 
-    // Validated data may be accessed as an array...
+    // 可以將已驗證的資料作為陣列訪問...
     $validated = $request->safe();
 
     $email = $validated['email'];
 
-If you would like to add additional fields to the validated data, you may call the `merge` method:
+如果希望將其他欄位添加到已驗證資料中，可以呼叫 `merge` 方法：
 
     $validated = $request->safe()->merge(['name' => 'Taylor Otwell']);
 
-If you would like to retrieve the validated data as a [collection](/docs/{{version}}/collections) instance, you may call the `collect` method:
+如果希望以 [集合](/docs/{{version}}/collections) 實例的形式取回已驗證的資料
 
     $collection = $request->safe()->collect();
 
 <a name="working-with-error-messages"></a>
-## Working With Error Messages
+## 錯誤訊息處理
 
-After calling the `errors` method on a `Validator` instance, you will receive an `Illuminate\Support\MessageBag` instance, which has a variety of convenient methods for working with error messages. The `$errors` variable that is automatically made available to all views is also an instance of the `MessageBag` class.
+在呼叫 `Validator` 實例上的 `errors` 方法後，你會收到一個 `Illuminate\Support\MessageBag` 實例，這個實例提供了多種方便的方法來處理錯誤訊息。自動提供給所有視圖的 `$errors` 變數也是 `MessageBag` 類的實例。
 
 <a name="retrieving-the-first-error-message-for-a-field"></a>
-#### Retrieving the First Error Message for a Field
+#### 取得欄位的第一條錯誤訊息
 
-To retrieve the first error message for a given field, use the `first` method:
+要取得指定欄位的第一條錯誤訊息，可以使用 `first` 方法：
 
     $errors = $validator->errors();
 
     echo $errors->first('email');
 
 <a name="retrieving-all-error-messages-for-a-field"></a>
-#### Retrieving All Error Messages for a Field
+#### 取得欄位的所有錯誤訊息
 
-If you need to retrieve an array of all the messages for a given field, use the `get` method:
+如果你需要取得指定欄位的所有錯誤訊息陣列，可以使用 `get` 方法：
 
     foreach ($errors->get('email') as $message) {
         // ...
     }
 
-If you are validating an array form field, you may retrieve all of the messages for each of the array elements using the `*` character:
+如果你正在驗證陣列形式的表單欄位，可以使用 `*` 字元來取得每個陣列元素的所有訊息：
 
     foreach ($errors->get('attachments.*') as $message) {
         // ...
     }
 
 <a name="retrieving-all-error-messages-for-all-fields"></a>
-#### Retrieving All Error Messages for All Fields
+#### 取得所有欄位的所有錯誤訊息
 
-To retrieve an array of all messages for all fields, use the `all` method:
+要取得所有欄位的所有訊息陣列，可以使用 `all` 方法：
 
     foreach ($errors->all() as $message) {
         // ...
     }
 
 <a name="determining-if-messages-exist-for-a-field"></a>
-#### Determining if Messages Exist for a Field
+#### 判斷欄位是否存在錯誤訊息
 
-The `has` method may be used to determine if any error messages exist for a given field:
+可以使用 `has` 方法來判斷指定欄位是否存在任何錯誤訊息：
 
     if ($errors->has('email')) {
         // ...
     }
 
 <a name="specifying-custom-messages-in-language-files"></a>
-### Specifying Custom Messages in Language Files
+### 在語言文件中指定自訂訊息
 
-Laravel's built-in validation rules each have an error message that is located in your application's `lang/en/validation.php` file. If your application does not have a `lang` directory, you may instruct Laravel to create it using the `lang:publish` Artisan command.
+Laravel 內建的驗證規則每個都有一個錯誤訊息，這些訊息位於應用程式的 `lang/en/validation.php` 文件中。如果你的應用程式沒有 `lang` 目錄，可以使用 `lang:publish` Artisan 命令來指示 Laravel 建立它。
 
-Within the `lang/en/validation.php` file, you will find a translation entry for each validation rule. You are free to change or modify these messages based on the needs of your application.
+在 `lang/en/validation.php` 文件中，你會找到每個驗證規則的翻譯條目。你可以根據應用程式的需求自由更改或修改這些訊息。
 
-In addition, you may copy this file to another language directory to translate the messages for your application's language. To learn more about Laravel localization, check out the complete [localization documentation](/docs/{{version}}/localization).
+此外，你可以將此文件複製到另一個語言目錄，以便為應用程式的語言翻譯訊息。要了解更多關於 Laravel 本地化的資訊，請查看完整的 [localization documentation](/docs/{{version}}/localization)。
 
 > [!WARNING]  
-> By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files, you may publish them via the `lang:publish` Artisan command.
+> Laravel 應用程式骨架預設不包含 `lang` 目錄。如果你想要自訂 Laravel 的語言文件，可以通過 `lang:publish` Artisan 命令發佈它們。
 
 <a name="custom-messages-for-specific-attributes"></a>
-#### Custom Messages for Specific Attributes
+#### 指定特定屬性的自訂訊息
 
-You may customize the error messages used for specified attribute and rule combinations within your application's validation language files. To do so, add your message customizations to the `custom` array of your application's `lang/xx/validation.php` language file:
+你可以在應用程式的驗證語言文件中，自訂用於特定屬性和規則組合的錯誤訊息。為此，將你的訊息自訂添加到應用程式的 `lang/xx/validation.php` 語言文件中的 `custom` 陣列中：
 
     'custom' => [
         'email' => [
-            'required' => 'We need to know your email address!',
-            'max' => 'Your email address is too long!'
+            'required' => '我們需要知道你的電子郵件地址！',
+            'max' => '你的電子郵件地址太長了！'
         ],
     ],
 
 <a name="specifying-attribute-in-language-files"></a>
-### Specifying Attributes in Language Files
+### 在語言文件中指定屬性
 
-Many of Laravel's built-in error messages include an `:attribute` placeholder that is replaced with the name of the field or attribute under validation. If you would like the `:attribute` portion of your validation message to be replaced with a custom value, you may specify the custom attribute name in the `attributes` array of your `lang/xx/validation.php` language file:
+Laravel 內建的許多錯誤訊息包含一個 `:attribute` placeholder，這個placeholder將被替換為正在驗證的欄位或屬性的名稱。如果你希望 `:attribute` 部分的驗證訊息被自訂值替換，可以在 `lang/xx/validation.php` 語言文件的 `attributes` 陣列中指定自訂屬性名稱：
 
     'attributes' => [
-        'email' => 'email address',
+        'email' => '電子郵件地址',
     ],
 
 > [!WARNING]  
-> By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files, you may publish them via the `lang:publish` Artisan command.
+> Laravel 應用程式骨架預設不包含 `lang` 目錄。如果你想要自訂 Laravel 的語言文件，可以通過 `lang:publish` Artisan 命令發佈它們。
 
 <a name="specifying-values-in-language-files"></a>
-### Specifying Values in Language Files
+### 在語言文件中指定值
 
-Some of Laravel's built-in validation rule error messages contain a `:value` placeholder that is replaced with the current value of the request attribute. However, you may occasionally need the `:value` portion of your validation message to be replaced with a custom representation of the value. For example, consider the following rule that specifies that a credit card number is required if the `payment_type` has a value of `cc`:
+Laravel 內建的一些驗證規則錯誤訊息包含一個 `:value` placeholder，這個placeholder將被請求屬性的當前值替換。然而，有時你可能需要將 `:value` 部分的驗證訊息替換為值的自訂表示形式。例如，考慮以下規則，該規則指定如果 `payment_type` 的值為 `cc`，則需要提供信用卡號：
 
     Validator::make($request->all(), [
         'credit_card_number' => 'required_if:payment_type,cc'
     ]);
 
-If this validation rule fails, it will produce the following error message:
+如果此驗證規則失敗，它將產生以下錯誤訊息：
 
 ```none
 The credit card number field is required when payment type is cc.
 ```
 
-Instead of displaying `cc` as the payment type value, you may specify a more user-friendly value representation in your `lang/xx/validation.php` language file by defining a `values` array:
+你可以在 `lang/xx/validation.php` 語言文件中定義 `values` 陣列，來指定一個更為使用者友善的值表示形式：
 
     'values' => [
         'payment_type' => [
-            'cc' => 'credit card'
+            'cc' => '信用卡'
         ],
     ],
 
 > [!WARNING]  
-> By default, the Laravel application skeleton does not include the `lang` directory. If you would like to customize Laravel's language files, you may publish them via the `lang:publish` Artisan command.
+> Laravel 應用程式骨架預設不包含 `lang` 目錄。如果你想要自訂 Laravel 的語言文件，可以通過 `lang:publish` Artisan 命令發佈它們。
 
-After defining this value, the validation rule will produce the following error message:
+定義此值後，驗證規則將產生以下錯誤訊息：
 
 ```none
 The credit card number field is required when payment type is credit card.
